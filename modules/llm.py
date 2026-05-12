@@ -9,28 +9,40 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
 
-def generate_medical_response(query, medical_context):
+def generate_rag_response(query, context, domain):
+
     prompt = f"""
-You are a helpful medical AI assistant.
+You are an expert AI assistant specialized in {domain}.
 
-Use ONLY the provided medical context.
+Use the provided context to answer the user's question clearly and naturally.
 
-Medical Context:
-{medical_context}
+Rules:
+- Explain concepts in simple terms first.
+- Then provide technical details if relevant.
+- Combine information from multiple retrieved contexts.
+- Do NOT just summarize papers individually.
+- Answer conversationally like a knowledgeable expert.
+- If the context is insufficient, say so honestly.
+
+Context:
+{context}
 
 User Question:
 {query}
 
-Give a clear and concise answer.
+Provide a detailed but easy-to-understand response.
 """
 
     try:
+
         response = model.generate_content(prompt)
+
         return response.text
 
-    except Exception as e:
+    except Exception:
+
         return (
-            "Gemini quota is currently unavailable, so I am showing the retrieved "
-            "medical information directly:\n\n"
-            + medical_context
+            f"LLM generation unavailable. "
+            f"Showing retrieved {domain} context:\n\n"
+            + context
         )

@@ -8,7 +8,7 @@ client = chromadb.PersistentClient(path="vector_db")
 
 
 # Load collection
-collection = client.get_collection(
+collection = client.get_or_create_collection(
     name="medical_knowledge"
 )
 

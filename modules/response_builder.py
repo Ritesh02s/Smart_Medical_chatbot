@@ -1,12 +1,26 @@
-from modules.medical_rag import retrieve_medical_context
-from modules.llm import generate_medical_response
 from modules.intent_classifier import detect_intent
+
+from modules.medical_rag import retrieve_medical_context
+from modules.arxiv_rag import retrieve_research_context
+
+from modules.llm import generate_rag_response
 
 
 def build_response(user_message, sentiment):
+    """
+    Builds chatbot response based on detected intent.
+
+    Flow:
+    - general  -> normal conversational response
+    - medical  -> medical RAG pipeline
+    - research -> arXiv research RAG pipeline
+    """
 
     intent = detect_intent(user_message)
 
+    # =========================
+    # GENERAL CONVERSATION
+    # =========================
     if intent == "general":
 
         if sentiment == "negative":
@@ -16,33 +30,69 @@ def build_response(user_message, sentiment):
             )
 
         elif sentiment == "positive":
-            response = "I'm glad the interaction was helpful."
+            response = (
+                "I'm glad the interaction was helpful."
+            )
 
         else:
-            response = "I'm here to help. Please ask any medical question."
+            response = (
+                "I'm here to help with medical or research questions."
+            )
 
         return response, intent
 
-    contexts = retrieve_medical_context(user_message, top_k=5)
+    # =========================
+    # MEDICAL RAG PIPELINE
+    # =========================
+    elif intent == "medical":
 
-    combined_context = "\n\n".join(contexts)
-
-    ai_response = generate_medical_response(
-        user_message,
-        combined_context
-    )
-
-    if sentiment == "negative":
-        intro = (
-            "I understand your concern. "
-            "Here’s some medical information that may help:\n\n"
+        contexts = retrieve_medical_context(
+            user_message,
+            top_k=5
         )
-    elif sentiment == "positive":
-        intro = (
-            "Glad to assist you. "
-            "Here’s the information you requested:\n\n"
+
+        combined_context = "\n\n".join(contexts)
+
+        response = generate_rag_response(
+            user_message,
+            combined_context,
+            domain="medical"
         )
+
+        if sentiment == "negative":
+            response = (
+                "I understand your concern. "
+                "Here’s some medical information that may help:\n\n"
+                + response
+            )
+
+        return response, intent
+
+    # =========================
+    # RESEARCH RAG PIPELINE
+    # =========================
+    elif intent == "research":
+
+        contexts = retrieve_research_context(
+            user_message,
+            top_k=3
+        )
+
+        combined_context = "\n\n".join(contexts)
+
+        response = generate_rag_response(
+            user_message,
+            combined_context,
+            domain="research"
+        )
+
+        return response, intent
+
+    # =========================
+    # FALLBACK
+    # =========================
     else:
-        intro = ""
-
-    return intro + ai_response, intent
+        return (
+            "I'm not sure how to classify this query yet.",
+            "general"
+        )

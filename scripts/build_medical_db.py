@@ -19,7 +19,7 @@ collection = client.get_or_create_collection(
 
 DATASET_PATH = "data/medquad"
 
-doc_id = 0
+doc_id = collection.count()
 
 xml_files = []
 

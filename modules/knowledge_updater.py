@@ -1,31 +1,35 @@
 import uuid
-
+import hashlib
 import chromadb
 
 from modules.embeddings import generate_embedding
 from modules.text_chunker import chunk_text
 
 
-# Load ChromaDB
 client = chromadb.PersistentClient(path="vector_db")
 
-collection = client.get_collection(
+collection = client.get_or_create_collection(
     name="medical_knowledge"
 )
 
 
 def add_document_to_db(text):
+    doc_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    existing = collection.get(ids=[f"{doc_hash}_0"])
+
+    if existing["ids"]:
+        return 0
 
     chunks = chunk_text(text)
 
-    for chunk in chunks:
-
+    for i, chunk in enumerate(chunks):
         embedding = generate_embedding(chunk)
 
         collection.add(
             documents=[chunk],
             embeddings=[embedding],
-            ids=[str(uuid.uuid4())]
+            ids=[f"{doc_hash}_{i}"]
         )
 
     return len(chunks)
