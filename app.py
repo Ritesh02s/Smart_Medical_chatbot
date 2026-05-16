@@ -12,6 +12,8 @@ from modules.document_loader import load_pdf
 from modules.knowledge_updater import add_document_to_db
 from modules.translator import translate_to_english
 from scheduler import start_scheduler
+from modules.arxiv_rag import search_research_papers
+from modules.image_generator import generate_image_from_prompt
 
 
 # =========================================
@@ -72,6 +74,53 @@ uploaded_image = st.sidebar.file_uploader(
     "Upload medical image",
     type=["jpg", "jpeg", "png"]
 )
+st.sidebar.header("🎨 Generate Image")
+
+image_prompt = st.sidebar.text_area(
+    "Enter image generation prompt"
+)
+
+generate_btn = st.sidebar.button("Generate Image")
+
+if generate_btn and image_prompt:
+
+    try:
+        generated_path = generate_image_from_prompt(
+            image_prompt,
+            output_path="generated_image.png"
+        )
+
+        st.sidebar.success("Image generated successfully.")
+        st.image(
+            generated_path,
+            caption="Generated Image",
+            use_container_width=True
+        )
+
+    except Exception as e:
+        st.sidebar.error(
+            f"Image generation failed: {e}"
+        )
+# =========================================
+# MULTILINGUAL DEMO TESTS
+# =========================================
+
+st.sidebar.header("🌐 Multilingual Demo")
+
+demo_language = st.sidebar.selectbox(
+    "Choose demo language",
+    ["Hindi", "Spanish", "French"]
+)
+
+demo_queries = {
+    "Hindi": "मधुमेह के लक्षण क्या हैं?",
+    "Spanish": "¿Cuáles son los síntomas de la diabetes?",
+    "French": "Quels sont les symptômes du diabète ?"
+}
+
+if st.sidebar.button("Load Demo Query"):
+
+    st.session_state.demo_query = demo_queries[demo_language]
 
 
 # =========================================
@@ -79,7 +128,8 @@ uploaded_image = st.sidebar.file_uploader(
 # =========================================
 
 user_input = st.text_input(
-    "Ask a medical or research question"
+    "Ask a medical or research question",
+    value=st.session_state.get("demo_query", "")
 )
 
 
@@ -100,15 +150,30 @@ if user_input:
     english_query = translate_to_english(
     user_input,
     language)
-    st.session_state.messages.append(
-    {
-        "role": "user",
-        "content": user_input,
-        "english_query": english_query
-    }
-)
+    enhanced_query = english_query
+    
+    current_message = {
+    "role": "user",
+    "content": user_input,
+    "english_query": english_query
+}
 
-    entities = extract_medical_entities(english_query)
+    if (
+        not st.session_state.messages
+        or st.session_state.messages[-1] != current_message
+    ):
+        st.session_state.messages.append(current_message)
+
+        entities = extract_medical_entities(english_query)
+
+        entity_terms = " ".join(
+            [entity["text"] for entity in entities]
+        )
+
+        enhanced_query = english_query
+
+        if entity_terms:
+            enhanced_query = f"{english_query} {entity_terms}"
 
     # =========================
     # MULTIMODAL
@@ -125,13 +190,14 @@ if user_input:
 
     else:
         conversation_history = "\n".join(
-    [
+            [
         f"{m['role']}: {m['content']}"
         for m in st.session_state.messages[-6:]
-    ]
-)
+            ]
+        
+        )
         response, intent = build_response(
-            english_query,
+            enhanced_query,
             sentiment,
             language,
             history=conversation_history
@@ -202,10 +268,51 @@ if user_input:
     # =====================================
 
     st.success(response)
+
     st.session_state.messages.append(
-    {
-        "role": "assistant",
-        "content": response,
-        "intent": intent
-    }
-)
+        {
+            "role": "assistant",
+            "content": response,
+            "intent": intent
+        }
+    )
+
+# =====================================
+# RESEARCH PAPER SEARCH UI
+# =====================================
+
+    if intent == "research":
+
+        st.subheader("📄 Related Research Papers")
+
+        papers = search_research_papers(
+            english_query,
+            top_k=5
+        )
+
+        for i, paper in enumerate(papers, 1):
+
+            with st.expander(
+                f"{i}. {paper['title']} | Score: {paper['score']}"
+            ):
+
+                st.write(paper["content"])
+
+        st.subheader("📊 Concept Relevance Visualization")
+
+        chart_data = {
+            "Paper": [
+                paper["title"][:40]
+                for paper in papers
+            ],
+            "Relevance Score": [
+                paper["score"]
+                for paper in papers
+            ]
+        }
+
+        st.bar_chart(
+            chart_data,
+            x="Paper",
+            y="Relevance Score"
+        )
