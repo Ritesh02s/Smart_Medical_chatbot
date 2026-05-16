@@ -9,28 +9,29 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
 
-def generate_rag_response(query, context, domain):
+def generate_rag_response(query, context, domain, language, history=""):
 
     prompt = f"""
 You are an expert AI assistant specialized in {domain}.
 
-Use the provided context to answer the user's question clearly and naturally.
-
-Rules:
-- Explain concepts in simple terms first.
-- Then provide technical details if relevant.
-- Combine information from multiple retrieved contexts.
-- Do NOT just summarize papers individually.
-- Answer conversationally like a knowledgeable expert.
-- If the context is insufficient, say so honestly.
+IMPORTANT:
+- The user's language is: {language}
+- Your ENTIRE response MUST be in {language}
+- Do NOT answer in English unless language == 'en'
+- Explain clearly and naturally
+- Use ONLY the provided context
+- If context is insufficient, say so honestly
 
 Context:
 {context}
 
+Conversation History:
+{history}
+
 User Question:
 {query}
 
-Provide a detailed but easy-to-understand response.
+Generate the response completely in {language}.
 """
 
     try:
@@ -42,7 +43,7 @@ Provide a detailed but easy-to-understand response.
     except Exception:
 
         return (
-            f"LLM generation unavailable. "
-            f"Showing retrieved {domain} context:\n\n"
-            + context
+            f"LLM generation is currently unavailable. "
+            f"Based on the retrieved {domain} knowledge, here is the relevant information:\n\n"
+            + context[:2000]
         )

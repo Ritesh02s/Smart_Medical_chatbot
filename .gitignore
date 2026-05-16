@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 vector_db/
 data/arxiv/
+data/medquad/

@@ -10,6 +10,8 @@ from modules.multi_modal import analyze_image
 
 from modules.document_loader import load_pdf
 from modules.knowledge_updater import add_document_to_db
+from modules.translator import translate_to_english
+from scheduler import start_scheduler
 
 
 # =========================================
@@ -21,7 +23,16 @@ st.set_page_config(
     page_icon="🩺",
     layout="centered"
 )
+if "scheduler_started" not in st.session_state:
 
+    start_scheduler()
+
+    st.session_state.scheduler_started = True
+
+if "messages" not in st.session_state:
+
+    st.session_state.messages = []
+    
 st.title("🩺 Smart Medical AI Chatbot")
 
 st.write(
@@ -86,7 +97,18 @@ if user_input:
 
     language = detect_language(user_input)
 
-    entities = extract_medical_entities(user_input)
+    english_query = translate_to_english(
+    user_input,
+    language)
+    st.session_state.messages.append(
+    {
+        "role": "user",
+        "content": user_input,
+        "english_query": english_query
+    }
+)
+
+    entities = extract_medical_entities(english_query)
 
     # =========================
     # MULTIMODAL
@@ -102,10 +124,17 @@ if user_input:
         intent = "multimodal"
 
     else:
-
+        conversation_history = "\n".join(
+    [
+        f"{m['role']}: {m['content']}"
+        for m in st.session_state.messages[-6:]
+    ]
+)
         response, intent = build_response(
-            user_input,
-            sentiment
+            english_query,
+            sentiment,
+            language,
+            history=conversation_history
         )
 
     # =====================================
@@ -173,3 +202,10 @@ if user_input:
     # =====================================
 
     st.success(response)
+    st.session_state.messages.append(
+    {
+        "role": "assistant",
+        "content": response,
+        "intent": intent
+    }
+)

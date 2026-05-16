@@ -1,3 +1,4 @@
+from modules import language
 from modules.intent_classifier import detect_intent
 
 from modules.medical_rag import retrieve_medical_context
@@ -6,7 +7,7 @@ from modules.arxiv_rag import retrieve_research_context
 from modules.llm import generate_rag_response
 
 
-def build_response(user_message, sentiment):
+def build_response(user_message, sentiment, language,history=""):
     """
     Builds chatbot response based on detected intent.
 
@@ -16,7 +17,7 @@ def build_response(user_message, sentiment):
     - research -> arXiv research RAG pipeline
     """
 
-    intent = detect_intent(user_message)
+    intent = detect_intent(user_message,history)
 
     # =========================
     # GENERAL CONVERSATION
@@ -56,7 +57,9 @@ def build_response(user_message, sentiment):
         response = generate_rag_response(
             user_message,
             combined_context,
-            domain="medical"
+            domain="medical", 
+            language=language,
+            history=history
         )
 
         if sentiment == "negative":
@@ -83,7 +86,9 @@ def build_response(user_message, sentiment):
         response = generate_rag_response(
             user_message,
             combined_context,
-            domain="research"
+            domain="research", 
+            language=language,
+            history=history
         )
 
         return response, intent
