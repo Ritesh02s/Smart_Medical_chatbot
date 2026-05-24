@@ -47,6 +47,8 @@ def extract_medical_entities(text):
         "stroke": "DISEASE",
         "infection": "DISEASE",
         "hypertension": "DISEASE",
+        "cold": "DISEASE",
+        "flu": "DISEASE",
 
         # Symptoms
         "fever": "SYMPTOM",
@@ -58,6 +60,8 @@ def extract_medical_entities(text):
         "fatigue": "SYMPTOM",
         "pain": "SYMPTOM",
         "blurry vision": "SYMPTOM",
+        "sore throat": "SYMPTOM",
+        "runny nose": "SYMPTOM",
 
         # Treatments
         "treatment": "TREATMENT",

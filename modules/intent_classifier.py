@@ -53,7 +53,18 @@ def detect_intent(text, history=""):
         "doctor",
         "fever",
         "health",
-        "blood"
+        "blood",
+        "cold",
+        "flu",
+        "cough",
+        "sore throat",
+        "runny nose",
+        "headache",
+        "fatigue",
+        "vomiting",
+        "nausea",
+        "diarrhea",
+        "allergy",
     ]
 
     # =========================
