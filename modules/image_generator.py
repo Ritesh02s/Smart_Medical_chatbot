@@ -1,19 +1,30 @@
 import os
-from turtle import st
 
+import streamlit as st
 import google.generativeai as genai
 
 from dotenv import load_dotenv
 
-import streamlit as st
-
-
-
 
 load_dotenv()
 
+
+def get_gemini_api_key():
+    """
+    Works both locally and on Streamlit Cloud.
+    Local: reads from .env
+    Cloud: reads from Streamlit secrets
+    """
+
+    try:
+        return st.secrets["GEMINI_API_KEY"]
+
+    except Exception:
+        return os.getenv("GEMINI_API_KEY")
+
+
 genai.configure(
-    api_key=st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    api_key=get_gemini_api_key()
 )
 
 
@@ -22,12 +33,11 @@ def generate_image_from_prompt(
     output_path="generated_image.png"
 ):
     """
-    Image generation placeholder using Gemini/Imagen access.
+    Generates an image using Gemini/Imagen if the account supports it.
 
     Note:
     Imagen access may require paid billing access.
-    If unavailable, this function raises a clear error instead of
-    breaking the full chatbot.
+    If unavailable, the app will show a clean error instead of crashing.
     """
 
     try:
@@ -47,8 +57,8 @@ def generate_image_from_prompt(
 
     except Exception as e:
         raise RuntimeError(
-            "Image generation is configured, but the current "
-            "Gemini/Imagen account or SDK does not allow image generation. "
-            "This usually requires paid billing access. "
+            "Image generation is configured, but your current Gemini/Imagen "
+            "account or SDK does not allow image generation. This usually "
+            "requires paid billing access. "
             f"Original error: {e}"
         )

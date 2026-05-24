@@ -1,12 +1,20 @@
 import os
+import streamlit as st
 import google.generativeai as genai
 from dotenv import load_dotenv
-import streamlit as st
 
 load_dotenv()
 
+
+def get_gemini_api_key():
+    try:
+        return st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return os.getenv("GEMINI_API_KEY")
+
+
 genai.configure(
-    api_key=st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    api_key=get_gemini_api_key()
 )
 
 model = genai.GenerativeModel("gemini-2.5-flash-lite")
