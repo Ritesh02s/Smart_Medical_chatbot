@@ -14,5 +14,4 @@ PyPDF2
 apscheduler
 feedparser
 spacy
-scispacy
 matplotlib
