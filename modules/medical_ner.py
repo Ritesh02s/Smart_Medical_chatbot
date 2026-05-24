@@ -2,7 +2,11 @@ import spacy
 
 
 # Load biomedical NLP model
-nlp = spacy.load("en_core_sci_sm")
+try:
+    nlp = spacy.load("en_core_sci_sm")
+
+except:
+    nlp = spacy.load("en_core_web_sm")
 
 
 def extract_medical_entities(text):

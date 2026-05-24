@@ -21,7 +21,7 @@ from modules.image_generator import generate_image_from_prompt
 # =========================================
 
 st.set_page_config(
-    page_title="Smart Medical AI Chatbot",
+    page_title="Multi-Domain AI Chatbot",
     page_icon="🩺",
     layout="centered"
 )
@@ -35,10 +35,10 @@ if "messages" not in st.session_state:
 
     st.session_state.messages = []
     
-st.title("🩺 Smart Medical AI Chatbot")
+st.title("🩺 Multi-Domain AI Chatbot")
 
 st.write(
-    "Medical chatbot with dynamic knowledge base expansion"
+    "Chatbot with dynamic knowledge base expansion"
 )
 
 
