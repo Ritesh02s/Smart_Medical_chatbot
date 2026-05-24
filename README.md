@@ -102,26 +102,45 @@ Smart_chatbot/
 ├── app.py
 ├── scheduler.py
 ├── requirements.txt
+├── runtime.txt
+├── README.md
+├── .env
+├── .gitignore
 │
 ├── modules/
-│   ├── chatbot.py
+│   ├── arxiv_rag.py
+│   ├── document_loader.py
 │   ├── embeddings.py
-│   ├── medical_ner.py
-│   ├── multilingual.py
-│   ├── sentiment.py
-│   ├── research_chatbot.py
-│   ├── image_analyzer.py
 │   ├── image_generator.py
-│   └── memory.py
+│   ├── intent_classifier.py
+│   ├── knowledge_updater.py
+│   ├── language.py
+│   ├── llm.py
+│   ├── medical_ner.py
+│   ├── medical_rag.py
+│   ├── multi_modal.py
+│   ├── response_builder.py
+│   ├── sentiment.py
+│   ├── text_chunker.py
+│   └── translator.py
+│
+├── scripts/
+│   ├── build_arxiv_db.py
+│   └── build_medical_db.py
 │
 ├── data/
-│   ├── medquad/
-│   └── arxiv/
+│   ├── arxiv/
+│   └── medquad/
 │
-├── chroma_db/
+├── vector_db/
 │
-└── uploads/
-
+├── venv/
+├── venv312/
+│
+├── test_models.py
+├── test_ner.py
+├── test_retrieval.py
+└── test_spacy.py
 
 # Installation
 
